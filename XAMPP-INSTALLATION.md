@@ -1,435 +1,365 @@
-# Meta Tag Analyzer - XAMPP Installation Guide
+# XAMPP Installation Guide for Meta Tag Analyzer
 
 This guide will walk you through setting up the Meta Tag Analyzer on XAMPP for local development and testing.
 
-## 📋 Prerequisites
+## Table of Contents
+- [Prerequisites](#prerequisites)
+- [XAMPP Installation](#xampp-installation)
+- [Project Setup](#project-setup)
+- [Database Configuration](#database-configuration)
+- [Testing the Installation](#testing-the-installation)
+- [Troubleshooting](#troubleshooting)
+- [Development Workflow](#development-workflow)
 
-### XAMPP Requirements
-- **XAMPP Version**: 7.4.x, 8.0.x, 8.1.x, or 8.2.x
+## Prerequisites
+
 - **Operating System**: Windows, macOS, or Linux
-- **Available Space**: At least 100 MB free space
+- **XAMPP Version**: 7.4.x or higher (recommended: 8.1.x or 8.2.x)
+- **Available Disk Space**: At least 1GB for XAMPP + 50MB for the project
+- **Administrator Rights**: Required for XAMPP installation
 
-### Download XAMPP
-If you don't have XAMPP installed:
-1. Visit [https://www.apachefriends.org/](https://www.apachefriends.org/)
-2. Download XAMPP for your operating system
-3. Install XAMPP following the standard installation process
+## XAMPP Installation
 
-## 🚀 Quick Installation
+### Step 1: Download XAMPP
 
-### Step 1: Start XAMPP Services
-1. Open **XAMPP Control Panel**
+1. Visit the official XAMPP website: https://www.apachefriends.org/
+2. Download the version that matches your operating system
+3. Choose PHP 7.4 or higher (recommended: PHP 8.1 or 8.2)
+
+### Step 2: Install XAMPP
+
+#### On Windows:
+1. Run the downloaded installer as Administrator
+2. Choose installation directory (default: `C:\xampp`)
+3. Select components to install:
+   - ✅ Apache
+   - ✅ MySQL
+   - ✅ PHP
+   - ✅ phpMyAdmin
+   - ❌ Mercury (not needed)
+   - ❌ Tomcat (not needed)
+4. Complete the installation
+
+#### On macOS:
+1. Open the downloaded DMG file
+2. Drag XAMPP to Applications folder
+3. Open Terminal and run: `sudo /Applications/XAMPP/xamppfiles/xampp start`
+
+#### On Linux:
+1. Make the installer executable: `chmod +x xampp-linux-*-installer.run`
+2. Run as root: `sudo ./xampp-linux-*-installer.run`
+3. Follow the installation wizard
+
+### Step 3: Start XAMPP Services
+
+1. Open XAMPP Control Panel
 2. Start the following services:
-   - ✅ **Apache** (Required)
-   - ✅ **MySQL** (Optional - only if you want to use MySQL instead of SQLite)
+   - **Apache** (Web server)
+   - **MySQL** (Database server - optional, only if using MySQL instead of SQLite)
 
-![XAMPP Control Panel](https://via.placeholder.com/600x300/28a745/ffffff?text=Start+Apache+%26+MySQL)
+## Project Setup
 
-### Step 2: Download the Project
-1. **Option A: Git Clone**
-   ```bash
-   cd C:\xampp\htdocs
-   git clone https://github.com/yourusername/meta-tag-analyzer.git
-   ```
+### Step 1: Download/Clone the Project
 
-2. **Option B: Manual Download**
-   - Download the project files
-   - Extract to `C:\xampp\htdocs\meta-tag-analyzer\`
+Place the Meta Tag Analyzer project in your XAMPP's web directory:
 
-### Step 3: Directory Setup
-Your XAMPP directory structure should look like this:
-
+#### Windows:
 ```
 C:\xampp\htdocs\meta-tag-analyzer\
-├── public/              # ← Web-accessible files
-├── app/                 # ← Application logic
-├── storage/             # ← Data storage
-├── database/            # ← Database schemas
-├── tests/               # ← Test files
-├── .env.php.example     # ← Configuration template
-└── README.md
 ```
 
-### Step 4: Configuration
-1. **Copy configuration file:**
-   ```bash
-   cd C:\xampp\htdocs\meta-tag-analyzer
-   copy .env.php.example .env.php
-   ```
+#### macOS:
+```
+/Applications/XAMPP/xamppfiles/htdocs/meta-tag-analyzer/
+```
 
-2. **Edit configuration** (open `.env.php` in your text editor):
+#### Linux:
+```
+/opt/lampp/htdocs/meta-tag-analyzer/
+```
+
+### Step 2: Set Directory Permissions
+
+#### On Windows:
+No additional permissions needed if running as Administrator.
+
+#### On macOS/Linux:
+```bash
+# Navigate to the project directory
+cd /Applications/XAMPP/xamppfiles/htdocs/meta-tag-analyzer/
+
+# Set proper permissions
+sudo chmod -R 755 .
+sudo chmod -R 777 storage/
+sudo chmod -R 777 database/
+sudo chown -R daemon:daemon storage/
+sudo chown -R daemon:daemon database/
+```
+
+### Step 3: Verify PHP Version
+
+1. Open your browser
+2. Navigate to: `http://localhost/dashboard/`
+3. Check that PHP version is 7.4 or higher
+4. Verify that the following PHP extensions are enabled:
+   - `curl`
+   - `json`
+   - `pdo`
+   - `pdo_sqlite` (for SQLite)
+   - `pdo_mysql` (for MySQL)
+   - `dom`
+   - `mbstring`
+
+## Database Configuration
+
+You have two options for the database: SQLite (recommended for XAMPP) or MySQL.
+
+### Option 1: SQLite (Recommended)
+
+SQLite is easier to set up and perfect for local development.
+
+1. The project uses SQLite by default
+2. The database file will be created automatically at: `database/app.db`
+3. No additional configuration needed
+
+### Option 2: MySQL (Advanced)
+
+If you prefer MySQL:
+
+1. **Start MySQL in XAMPP Control Panel**
+
+2. **Create Database**:
+   - Open phpMyAdmin: `http://localhost/phpmyadmin/`
+   - Click "New" to create a database
+   - Name it: `meta_tag_analyzer`
+   - Set collation to: `utf8mb4_unicode_ci`
+
+3. **Configure Database Connection**:
+   Edit `.env.php` and update the database settings:
    ```php
-   <?php
-   return [
-       'APP_ENV' => 'dev',              // Set to 'dev' for development
-       'APP_DEBUG' => true,             // Enable debug mode
-       'BASE_URL' => 'http://localhost/meta-tag-analyzer/public',
-       
-       // Database (SQLite is recommended for XAMPP)
-       'DB_DRIVER' => 'sqlite',
-       'SQLITE_PATH' => __DIR__ . '/storage/meta.sqlite',
-       
-       // ... rest of configuration
-   ];
-   ```
-
-### Step 5: Set Permissions (Windows)
-1. Right-click on the `storage` folder
-2. Select **Properties** → **Security**
-3. Ensure **Full Control** for your user account
-4. Apply to all subfolders
-
-### Step 6: Test Installation
-1. Open your web browser
-2. Navigate to: `http://localhost/meta-tag-analyzer/public/test.php`
-3. Verify all tests pass (should see green checkmarks ✅)
-4. **Important:** Delete `test.php` after testing
-
-### Step 7: Access the Application
-Visit: `http://localhost/meta-tag-analyzer/public/`
-
-🎉 **You're ready to start analyzing URLs!**
-
----
-
-## 🔧 Detailed Installation Steps
-
-### For Windows Users
-
-#### 1. Install XAMPP
-```powershell
-# Download from https://www.apachefriends.org/
-# Run the installer as Administrator
-# Default installation path: C:\xampp\
-```
-
-#### 2. Configure XAMPP
-1. **Open XAMPP Control Panel as Administrator**
-2. **Start Apache:**
-   - Click "Start" next to Apache
-   - Default port: 80 (if port 80 is busy, change to 8080)
-3. **Start MySQL (optional):**
-   - Click "Start" next to MySQL
-   - Default port: 3306
-
-#### 3. Download Project
-```cmd
-# Open Command Prompt as Administrator
-cd C:\xampp\htdocs
-git clone https://github.com/yourusername/meta-tag-analyzer.git
-# OR extract downloaded ZIP file here
-```
-
-#### 4. Configure Project
-```cmd
-cd meta-tag-analyzer
-copy .env.php.example .env.php
-notepad .env.php
-```
-
-**Edit these key settings:**
-```php
-'APP_ENV' => 'dev',
-'APP_DEBUG' => true,
-'BASE_URL' => 'http://localhost/meta-tag-analyzer/public',
-'DB_DRIVER' => 'sqlite',  // Recommended for XAMPP
-```
-
-#### 5. Set Folder Permissions
-```cmd
-# Make storage directory writable
-icacls storage /grant Users:F /T
-icacls storage\cache /grant Users:F /T
-icacls storage\logs /grant Users:F /T
-```
-
-### For macOS Users
-
-#### 1. Install XAMPP
-```bash
-# Download XAMPP for macOS
-# Install to /Applications/XAMPP/
-```
-
-#### 2. Start Services
-```bash
-sudo /Applications/XAMPP/xamppfiles/xampp start
-# Or use XAMPP Control Panel
-```
-
-#### 3. Download Project
-```bash
-cd /Applications/XAMPP/xamppfiles/htdocs
-git clone https://github.com/yourusername/meta-tag-analyzer.git
-```
-
-#### 4. Configure Project
-```bash
-cd meta-tag-analyzer
-cp .env.php.example .env.php
-nano .env.php
-```
-
-**Update configuration:**
-```php
-'BASE_URL' => 'http://localhost/meta-tag-analyzer/public',
-```
-
-#### 5. Set Permissions
-```bash
-chmod 755 storage/
-chmod 755 storage/cache/
-chmod 755 storage/logs/
-chmod 644 .env.php
-```
-
-### For Linux Users
-
-#### 1. Install XAMPP
-```bash
-# Download XAMPP for Linux
-wget https://www.apachefriends.org/xampp-files/8.2.0/xampp-linux-x64-8.2.0-0-installer.run
-chmod +x xampp-linux-x64-8.2.0-0-installer.run
-sudo ./xampp-linux-x64-8.2.0-0-installer.run
-```
-
-#### 2. Start Services
-```bash
-sudo /opt/lampp/lampp start
-```
-
-#### 3. Setup Project
-```bash
-cd /opt/lampp/htdocs
-sudo git clone https://github.com/yourusername/meta-tag-analyzer.git
-sudo chown -R daemon:daemon meta-tag-analyzer/
-```
-
-#### 4. Configure
-```bash
-cd meta-tag-analyzer
-sudo cp .env.php.example .env.php
-sudo nano .env.php
-```
-
-#### 5. Set Permissions
-```bash
-sudo chmod 755 storage/
-sudo chmod 755 storage/cache/
-sudo chmod 755 storage/logs/
-sudo chmod 644 .env.php
-```
-
----
-
-## 🗄️ Database Configuration
-
-### Option 1: SQLite (Recommended for XAMPP)
-
-**Advantages:**
-- ✅ No additional setup required
-- ✅ Perfect for development
-- ✅ Automatically created
-- ✅ No MySQL service needed
-
-**Configuration:**
-```php
-// In .env.php
-'DB_DRIVER' => 'sqlite',
-'SQLITE_PATH' => __DIR__ . '/storage/meta.sqlite',
-```
-
-### Option 2: MySQL (Optional)
-
-**When to use:**
-- Testing MySQL compatibility
-- Learning database administration
-- Preparing for production deployment
-
-**Setup Steps:**
-
-1. **Start MySQL in XAMPP**
-2. **Create Database:**
-   ```sql
-   -- Open http://localhost/phpmyadmin
-   CREATE DATABASE metataganalyzer CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-
-3. **Import Schema:**
-   - In phpMyAdmin, select the database
-   - Go to "Import" tab
-   - Upload `database/schema.mysql.sql`
-
-4. **Update Configuration:**
-   ```php
-   // In .env.php
-   'DB_DRIVER' => 'mysql',
-   'MYSQL' => [
-       'HOST' => 'localhost',
-       'DB' => 'metataganalyzer',
-       'USER' => 'root',
-       'PASS' => '',  // Empty for XAMPP default
+   // Database Configuration
+   'database' => [
+       'type' => 'mysql',  // Change from 'sqlite' to 'mysql'
+       'host' => 'localhost',
+       'port' => 3306,
+       'name' => 'meta_tag_analyzer',
+       'username' => 'root',
+       'password' => '',  // Default XAMPP MySQL password is empty
+       'charset' => 'utf8mb4',
    ],
    ```
 
----
+4. **Import Database Schema**:
+   - In phpMyAdmin, select your database
+   - Click "Import" tab
+   - Choose file: `database/schema.mysql.sql`
+   - Click "Go" to import
 
-## 🧪 Testing Your Installation
+## Testing the Installation
 
-### 1. Run Installation Test
-Visit: `http://localhost/meta-tag-analyzer/public/test.php`
+### Step 1: Access the Application
 
-**Expected Results:**
-- ✅ Configuration loaded successfully
-- ✅ Database connection successful
-- ✅ Cache system working
-- ✅ HTTP Client initialized
-- ✅ URL Validation tests pass
-- ✅ File permissions correct
-- ✅ PHP extensions loaded
+1. Make sure Apache is running in XAMPP
+2. Open your web browser
+3. Navigate to: `http://localhost/meta-tag-analyzer/public/`
 
-### 2. Test the Application
-1. **Visit Home Page:**
-   `http://localhost/meta-tag-analyzer/public/`
+### Step 2: Test Basic Functionality
 
-2. **Analyze a Test URL:**
-   - Enter: `https://example.com`
+1. **Home Page Test**:
+   - You should see the Meta Tag Analyzer interface
+   - The page should load without errors
+
+2. **URL Analysis Test**:
+   - Enter a test URL (e.g., `https://example.com`)
    - Click "Analyze URL"
-   - Verify results display correctly
+   - Wait for the analysis to complete
+   - Verify that meta tag information is displayed
 
-3. **Test API Endpoint:**
-   `http://localhost/meta-tag-analyzer/public/api/analyze?url=https://example.com`
+3. **API Test**:
+   - Navigate to: `http://localhost/meta-tag-analyzer/public/api/analyze.php?url=https://example.com`
+   - You should receive JSON response with meta tag data
 
-4. **Test Export Functions:**
-   - Analyze a URL
-   - Click "JSON" and "CSV" export buttons
-   - Verify files download
+### Step 3: Check Error Logs
 
-### 3. Test with Sample Page
-Use the included test page:
-`http://localhost/meta-tag-analyzer/tests/sample-pages/complete-test.html`
+If something doesn't work:
 
----
+1. **PHP Errors**: Check `storage/logs/app.log`
+2. **Apache Errors**: Check XAMPP Apache error logs
+3. **Browser Console**: Check for JavaScript errors (F12)
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues and Solutions
 
-#### 🚨 "Apache failed to start"
-**Cause:** Port 80 is already in use
+#### 1. "Page Not Found" Error
 
-**Solutions:**
-1. **Change Apache port:**
-   - XAMPP Control Panel → Apache → Config → httpd.conf
-   - Change `Listen 80` to `Listen 8080`
-   - Restart Apache
-   - Access via: `http://localhost:8080/meta-tag-analyzer/public/`
+**Problem**: Accessing `http://localhost/meta-tag-analyzer/` shows 404 error.
 
-2. **Stop conflicting services:**
-   ```cmd
-   # Windows: Stop IIS or other web servers
-   net stop was /y
-   net stop iisadmin /y
+**Solution**:
+- Ensure the project is in the correct XAMPP directory
+- Try accessing: `http://localhost/meta-tag-analyzer/public/`
+- Check that Apache is running in XAMPP Control Panel
+
+#### 2. PHP Extensions Missing
+
+**Problem**: Error about missing PHP extensions.
+
+**Solution**:
+1. Open `C:\xampp\php\php.ini` (Windows) or equivalent
+2. Find and uncomment these lines by removing the `;`:
+   ```ini
+   extension=curl
+   extension=pdo_sqlite
+   extension=pdo_mysql
+   extension=mbstring
+   ```
+3. Restart Apache in XAMPP Control Panel
+
+#### 3. Permission Denied Errors
+
+**Problem**: Cannot write to database or cache files.
+
+**Solution**:
+```bash
+# Make directories writable
+chmod 777 storage/cache/
+chmod 777 storage/logs/
+chmod 777 database/
+```
+
+#### 4. Database Connection Failed
+
+**Problem**: MySQL connection errors.
+
+**Solution**:
+1. Verify MySQL is running in XAMPP
+2. Check database credentials in `.env.php`
+3. Test connection in phpMyAdmin
+4. Consider switching to SQLite for simplicity
+
+#### 5. cURL SSL Certificate Issues
+
+**Problem**: SSL certificate verification failures.
+
+**Solution**:
+1. Download `cacert.pem` from: https://curl.se/ca/cacert.pem
+2. Place it in `C:\xampp\php\extras\ssl\`
+3. Edit `php.ini`:
+   ```ini
+   curl.cainfo = "C:\xampp\php\extras\ssl\cacert.pem"
+   ```
+4. Restart Apache
+
+#### 6. Memory Limit Issues
+
+**Problem**: PHP memory limit exceeded.
+
+**Solution**:
+1. Edit `php.ini`
+2. Increase memory limit:
+   ```ini
+   memory_limit = 256M
+   ```
+3. Restart Apache
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. **Check Logs**: Always check `storage/logs/app.log` first
+2. **XAMPP Forums**: Visit XAMPP community forums
+3. **PHP Documentation**: Check PHP.net for extension issues
+4. **Project Issues**: Create an issue in the project repository
+
+## Development Workflow
+
+### Recommended Development Setup
+
+1. **Use SQLite**: Easier for development, no MySQL setup required
+2. **Enable Error Reporting**: Set `APP_DEBUG=true` in `.env.php`
+3. **Monitor Logs**: Keep `storage/logs/app.log` open in a text editor
+4. **Browser Dev Tools**: Use F12 to monitor network requests and errors
+
+### Making Changes
+
+1. **Edit Files**: Use your preferred code editor
+2. **Test Changes**: Refresh browser to see changes
+3. **Check Logs**: Monitor for any new errors
+4. **Clear Cache**: Delete files in `storage/cache/` if needed
+
+### Backup Your Work
+
+Before making significant changes:
+
+1. **Backup Database**:
+   ```bash
+   # For SQLite
+   cp database/app.db database/app.db.backup
+   
+   # For MySQL - export via phpMyAdmin
    ```
 
-#### 🚨 "Configuration file not found"
-**Cause:** `.env.php` file missing
-
-**Solution:**
-```bash
-cd C:\xampp\htdocs\meta-tag-analyzer
-copy .env.php.example .env.php
-```
-
-#### 🚨 "Database connection failed"
-**Cause:** SQLite file permissions or MySQL not running
-
-**Solutions:**
-1. **For SQLite:**
-   ```cmd
-   # Windows
-   icacls storage /grant Users:F /T
+2. **Backup Configuration**:
+   ```bash
+   cp .env.php .env.php.backup
    ```
 
-2. **For MySQL:**
-   - Start MySQL in XAMPP Control Panel
-   - Verify database exists in phpMyAdmin
+## Performance Tips
 
-#### 🚨 "Permission denied" errors
-**Cause:** Storage directory not writable
+### For Better Performance on XAMPP
 
-**Solution:**
-```bash
-# Windows
-icacls storage /grant Users:F /T
+1. **Increase PHP Limits** in `php.ini`:
+   ```ini
+   max_execution_time = 60
+   max_input_time = 60
+   memory_limit = 256M
+   post_max_size = 8M
+   upload_max_filesize = 2M
+   ```
 
-# macOS/Linux
-chmod 755 storage/
-chmod 755 storage/cache/
-chmod 755 storage/logs/
-```
+2. **Enable OPcache** in `php.ini`:
+   ```ini
+   opcache.enable=1
+   opcache.memory_consumption=128
+   opcache.max_accelerated_files=4000
+   ```
 
-#### 🚨 "Class not found" errors
-**Cause:** File paths or autoloading issues
+3. **Optimize Apache** in `httpd.conf`:
+   ```apache
+   # Enable compression
+   LoadModule deflate_module modules/mod_deflate.so
+   
+   # Enable expires headers
+   LoadModule expires_module modules/mod_expires.so
+   ```
 
-**Solution:**
-1. Verify all files are in correct locations
-2. Check that `app/bootstrap.php` exists
-3. Ensure proper file permissions
+## Security Considerations
 
-#### 🚨 "cURL error" when analyzing URLs
-**Cause:** cURL extension not enabled or firewall blocking
+When using XAMPP for development:
 
-**Solutions:**
-1. **Enable cURL in PHP:**
-   - XAMPP Control Panel → Apache → Config → PHP (php.ini)
-   - Uncomment: `extension=curl`
-   - Restart Apache
+1. **Never use XAMPP in production**
+2. **Change default MySQL password**:
+   ```sql
+   SET PASSWORD FOR 'root'@'localhost' = PASSWORD('your_password');
+   ```
+3. **Restrict network access** if not needed
+4. **Keep XAMPP updated** to latest version
+5. **Use firewall** to block unnecessary ports
 
-2. **Check firewall settings:**
-   - Allow XAMPP through Windows Firewall
-   - Temporarily disable antivirus to test
+## Network Access
 
-### Performance Optimization for XAMPP
+To allow others to access your XAMPP installation:
 
-#### 1. PHP Configuration
-Edit `C:\xampp\php\php.ini`:
-```ini
-# Increase memory limit
-memory_limit = 128M
+1. **Configure Apache**:
+   - Edit `httpd.conf`
+   - Change `Listen 127.0.0.1:80` to `Listen 80`
 
-# Set timezone
-date.timezone = "America/New_York"
+2. **Configure Firewall**:
+   - Allow port 80 through Windows Firewall
+   - Or access via: `http://your-ip-address/meta-tag-analyzer/public/`
 
-# Enable error reporting for development
-display_errors = On
-error_reporting = E_ALL
-
-# Optimize for development
-max_execution_time = 60
-max_input_time = 60
-```
-
-#### 2. Apache Configuration
-Edit `C:\xampp\apache\conf\httpd.conf`:
-```apache
-# Enable mod_rewrite (should be enabled by default)
-LoadModule rewrite_module modules/mod_rewrite.so
-
-# Enable .htaccess
-AllowOverride All
-```
-
----
-
-## 🌐 Accessing from Other Devices
-
-### Local Network Access
-
-To access from other devices on your network:
-
-1. **Find your IP address:**
-   ```cmd
+3. **Find Your IP Address**:
+   ```bash
    # Windows
    ipconfig
    
@@ -437,125 +367,10 @@ To access from other devices on your network:
    ifconfig
    ```
 
-2. **Update configuration:**
-   ```php
-   // In .env.php
-   'BASE_URL' => 'http://192.168.1.100/meta-tag-analyzer/public',
-   ```
+## Conclusion
 
-3. **Configure Apache:**
-   Edit `C:\xampp\apache\conf\extra\httpd-xampp.conf`
-   ```apache
-   # Allow access from network
-   <LocationMatch "^/(?i:(?:xampp|security|licenses|phpmyadmin|webalizer|server-status|server-info))">
-       Require local
-       Require ip 192.168.1  # Allow your network
-   </LocationMatch>
-   ```
+You should now have a fully functional Meta Tag Analyzer running on XAMPP! The application provides a robust platform for analyzing website meta tags and SEO data.
 
-4. **Access from other devices:**
-   `http://192.168.1.100/meta-tag-analyzer/public/`
+For production deployment, consider using a proper web hosting service with PHP 7.4+ support and follow the main installation guide in `README.md`.
 
----
-
-## 🔄 Development Workflow
-
-### Recommended Development Setup
-
-1. **Enable Development Mode:**
-   ```php
-   // In .env.php
-   'APP_ENV' => 'dev',
-   'APP_DEBUG' => true,
-   'DEV' => [
-       'SHOW_ERRORS' => true,
-       'LOG_QUERIES' => true,
-       'DISABLE_CACHE' => false,
-   ],
-   ```
-
-2. **Use Live Reload (Optional):**
-   - Install browser extension for auto-refresh
-   - Or use tools like BrowserSync
-
-3. **Monitor Logs:**
-   ```bash
-   # Windows
-   tail -f C:\xampp\htdocs\meta-tag-analyzer\storage\logs\app.log
-   
-   # Or use a log viewer application
-   ```
-
-4. **Test API with Postman/curl:**
-   ```bash
-   # Test API endpoint
-   curl "http://localhost/meta-tag-analyzer/public/api/analyze?url=https://example.com"
-   ```
-
-### Version Control with Git
-
-```bash
-# Initialize git repository (if not already done)
-cd C:\xampp\htdocs\meta-tag-analyzer
-git init
-git add .
-git commit -m "Initial XAMPP setup"
-
-# Create development branch
-git checkout -b development
-
-# Make changes and commit
-git add .
-git commit -m "Feature: Added new functionality"
-```
-
----
-
-## 📚 Additional Resources
-
-### XAMPP Documentation
-- [Official XAMPP Documentation](https://www.apachefriends.org/documentation.html)
-- [XAMPP FAQ](https://www.apachefriends.org/faq.html)
-
-### Project Documentation
-- [Main README](README.md) - Complete project documentation
-- [API Documentation](README.md#api-reference) - RESTful API details
-- [Security Guide](README.md#security-best-practices) - Security best practices
-
-### Helpful Tools for Development
-- **Code Editor:** VS Code, PhpStorm, Sublime Text
-- **API Testing:** Postman, Insomnia
-- **Database Management:** phpMyAdmin (included with XAMPP)
-- **Git Client:** GitHub Desktop, SourceTree
-
----
-
-## 🎯 Next Steps
-
-After successful installation:
-
-1. **Explore the Application:**
-   - Test with various URLs
-   - Try different export formats
-   - Experiment with the API
-
-2. **Customize for Your Needs:**
-   - Modify the UI in `app/Views/`
-   - Adjust analysis parameters in `.env.php`
-   - Add custom features in `app/`
-
-3. **Deploy to Production:**
-   - Follow the [main README](README.md) for production deployment
-   - Use a proper hosting provider
-   - Configure SSL certificates
-
-4. **Contribute:**
-   - Report bugs or suggest features
-   - Submit pull requests
-   - Share your customizations
-
----
-
-**🎉 Congratulations! Your Meta Tag Analyzer is now running on XAMPP!**
-
-For additional help, refer to the [main documentation](README.md) or create an issue in the project repository.
+Happy analyzing! 🚀
