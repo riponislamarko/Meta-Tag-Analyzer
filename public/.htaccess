@@ -1,0 +1,325 @@
+# Meta Tag Analyzer - Apache Configuration
+# 
+# Security headers, access controls, caching rules,
+# and URL rewriting for shared hosting compatibility.
+
+# Disable directory browsing
+Options -Indexes
+
+# Disable server signature
+ServerTokens Prod
+ServerSignature Off
+
+# =============================================
+# Security - Block access to sensitive files
+# =============================================
+
+# Deny access to application directories
+RedirectMatch 404 ^/(app|database|storage|tests)/
+RedirectMatch 404 ^/\.(env|git|htaccess|htpasswd)
+
+# Deny access to specific file types
+<FilesMatch "\.(log|sql|md|txt|json|lock|yml|yaml|ini)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Deny access to PHP configuration files
+<FilesMatch "^(config|bootstrap|composer)\.(php|json|lock)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Protect .env files
+<Files ".env*">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# =============================================
+# Security Headers
+# =============================================
+
+<IfModule mod_headers.c>
+    # Security Headers
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' https://cdn.jsdelivr.net; connect-src 'self'; frame-ancestors 'self'; form-action 'self'; base-uri 'self';"
+    
+    # Remove potentially sensitive headers
+    Header always unset Server
+    Header always unset X-Powered-By
+    Header always unset X-CF-Powered-By
+    Header always unset X-Mod-Pagespeed
+    Header always unset X-Pingback
+    
+    # HSTS (only enable on HTTPS)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" env=HTTPS
+</IfModule>
+
+# =============================================
+# Caching and Performance
+# =============================================
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Default expiration
+    ExpiresDefault "access plus 1 month"
+    
+    # HTML files (short cache)
+    ExpiresByType text/html "access plus 1 hour"
+    
+    # CSS and JavaScript
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    
+    # Images
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # Fonts
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    ExpiresByType application/font-woff2 "access plus 1 year"
+    
+    # API responses (no cache)
+    ExpiresByType application/json "access plus 0 seconds"
+    
+    # PHP files (no cache)
+    ExpiresByType application/x-httpd-php "access plus 0 seconds"
+</IfModule>
+
+# Cache-Control headers
+<IfModule mod_headers.c>
+    # Cache static assets
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    
+    # No cache for HTML and PHP
+    <FilesMatch "\.(html|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    
+    # API responses
+    <FilesMatch "api/">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# =============================================
+# Compression
+# =============================================
+
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, Text, XML and fonts
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/x-font-otf
+    AddOutputFilterByType DEFLATE application/x-font-truetype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE application/json
+    
+    # Remove browser bugs (only needed for ancient browsers)
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    Header append Vary User-Agent
+</IfModule>
+
+# Alternative compression with mod_gzip
+<IfModule mod_gzip.c>
+    mod_gzip_on Yes
+    mod_gzip_dechunk Yes
+    mod_gzip_item_include file \.(html?|txt|css|js|php|pl)$
+    mod_gzip_item_include handler ^cgi-script$
+    mod_gzip_item_include mime ^text/.*
+    mod_gzip_item_include mime ^application/x-javascript.*
+    mod_gzip_item_exclude mime ^image/.*
+    mod_gzip_item_exclude rspheader ^Content-Encoding:.*gzip.*
+</IfModule>
+
+# =============================================
+# URL Rewriting and Error Handling
+# =============================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Block suspicious requests
+    RewriteCond %{QUERY_STRING} (union|concat|insert|drop|delete|script|eval|exec) [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Block common attack patterns
+    RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+    RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2}) [OR]
+    RewriteCond %{QUERY_STRING} \.\./\.\. [OR]
+    RewriteCond %{QUERY_STRING} (localhost|loopback|127\.0\.0\.1) [NC,OR]
+    RewriteCond %{QUERY_STRING} \{0\} [OR]
+    RewriteCond %{QUERY_STRING} (\[|\]) [OR]
+    RewriteCond %{QUERY_STRING} (\"|%22) [OR]
+    RewriteCond %{QUERY_STRING} (\'|%27) [OR]
+    RewriteCond %{QUERY_STRING} (;|<|>|'|"|\)|%0A|%0D|%22|%27|%3C|%3E|%00) [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Block file injection attempts
+    RewriteCond %{REQUEST_URI} (\.php|\.asp|\.aspx|\.jsp|\.pl|\.py)(\.|/) [NC]
+    RewriteRule ^(.*)$ - [F,L]
+    
+    # Block access to version control and config files
+    RewriteRule ^\.git - [F,L]
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^composer\.(json|lock) - [F,L]
+    RewriteRule ^package(-lock)?\.json - [F,L]
+    
+    # Redirect www to non-www (optional - adjust as needed)
+    # RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+    # RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+    
+    # Force HTTPS (optional - uncomment if you have SSL)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# =============================================
+# Error Pages
+# =============================================
+
+# Custom error pages (optional)
+# ErrorDocument 403 /error/403.html
+# ErrorDocument 404 /error/404.html
+# ErrorDocument 500 /error/500.html
+
+# =============================================
+# MIME Types
+# =============================================
+
+<IfModule mod_mime.c>
+    # Proper MIME types
+    AddType application/javascript .js
+    AddType text/css .css
+    AddType image/svg+xml .svg
+    AddType application/font-woff .woff
+    AddType application/font-woff2 .woff2
+    AddType application/json .json
+    
+    # UTF-8 encoding
+    AddDefaultCharset UTF-8
+    AddCharset UTF-8 .html .css .js .xml .json .rss .atom
+</IfModule>
+
+# =============================================
+# PHP Configuration (if supported by host)
+# =============================================
+
+<IfModule mod_php8.c>
+    # Hide PHP version
+    php_flag expose_php Off
+    
+    # Security settings
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+    
+    # Error reporting (production)
+    php_flag display_errors Off
+    php_flag log_errors On
+    
+    # Session security
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.use_strict_mode 1
+    
+    # File upload limits
+    php_value upload_max_filesize 2M
+    php_value post_max_size 2M
+    php_value max_execution_time 30
+    php_value max_input_time 30
+    php_value memory_limit 64M
+</IfModule>
+
+# For PHP 7.x
+<IfModule mod_php7.c>
+    php_flag expose_php Off
+    php_flag allow_url_fopen Off
+    php_flag allow_url_include Off
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value upload_max_filesize 2M
+    php_value post_max_size 2M
+    php_value max_execution_time 30
+    php_value max_input_time 30
+    php_value memory_limit 64M
+</IfModule>
+
+# =============================================
+# Rate Limiting (if mod_evasive is available)
+# =============================================
+
+<IfModule mod_evasive24.c>
+    DOSHashTableSize    2048
+    DOSPageCount        10
+    DOSPageInterval     1
+    DOSSiteCount        50
+    DOSSiteInterval     1
+    DOSBlockingPeriod   300
+</IfModule>
+
+# =============================================
+# Additional Security
+# =============================================
+
+# Prevent access to backup files
+<FilesMatch "\.(bak|backup|old|orig|tmp|temp|swp|swo|~)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Prevent execution of PHP in uploads directory
+<Directory "storage/">
+    <FilesMatch "\.php$">
+        Order Allow,Deny
+        Deny from all
+    </FilesMatch>
+</Directory>
+
+# Remove ETags (optional, for better caching control)
+<IfModule mod_headers.c>
+    Header unset ETag
+</IfModule>
+FileETag None

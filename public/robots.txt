@@ -1,0 +1,33 @@
+# Meta Tag Analyzer - Robots.txt
+# 
+# Search engine crawling directives
+
+User-agent: *
+Allow: /
+Allow: /api/analyze
+
+# Block sensitive directories
+Disallow: /app/
+Disallow: /storage/
+Disallow: /database/
+Disallow: /tests/
+
+# Block log files
+Disallow: *.log
+
+# Block configuration files
+Disallow: .env*
+Disallow: *.json
+Disallow: *.sql
+
+# Allow common assets
+Allow: /assets/
+Allow: /favicon.ico
+Allow: /robots.txt
+Allow: /sitemap.xml
+
+# Crawl delay (optional)
+Crawl-delay: 1
+
+# Sitemap location (add if you create one)
+# Sitemap: https://yourdomain.com/sitemap.xml

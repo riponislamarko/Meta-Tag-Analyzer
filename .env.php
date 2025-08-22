@@ -1,0 +1,130 @@
+<?php
+/**
+ * Meta Tag Analyzer Configuration
+ * 
+ * This file contains all configuration settings for the application.
+ * Copy this file and modify the values for your environment.
+ * 
+ * SECURITY NOTE: Keep this file outside the web root or protect it with .htaccess
+ */
+
+return [
+    // Application Environment
+    'APP_ENV' => 'prod', // 'dev', 'prod'
+    'APP_DEBUG' => false,
+    'BASE_URL' => 'https://example.com/meta-tag-analyzer',
+    'APP_NAME' => 'Meta Tag Analyzer',
+    'APP_VERSION' => '1.0.0',
+    
+    // Database Configuration
+    'DB_DRIVER' => 'sqlite', // 'sqlite' or 'mysql'
+    'SQLITE_PATH' => __DIR__ . '/storage/meta.sqlite',
+    
+    // MySQL Configuration (used when DB_DRIVER = 'mysql')
+    'MYSQL' => [
+        'HOST' => 'localhost',
+        'PORT' => 3306,
+        'DB' => 'metataganalyzer',
+        'USER' => 'dbuser',
+        'PASS' => 'dbpass',
+        'CHARSET' => 'utf8mb4',
+        'COLLATION' => 'utf8mb4_unicode_ci',
+    ],
+    
+    // Cache Configuration
+    'CACHE_TTL' => 21600, // 6 hours in seconds
+    'CACHE_PATH' => __DIR__ . '/storage/cache',
+    'CACHE_MAX_SIZE' => 524288, // 512 KB per cached HTML file
+    
+    // Rate Limiting
+    'RATE_LIMIT_PER_HOUR' => 30,
+    'RATE_LIMIT_CLEANUP_INTERVAL' => 3600, // Clean old records every hour
+    
+    // HTTP Client Configuration
+    'HTTP' => [
+        'CONNECT_TIMEOUT' => 5,     // Connection timeout in seconds
+        'TIMEOUT' => 12,            // Total timeout in seconds
+        'MAX_REDIRECTS' => 5,       // Maximum number of redirects to follow
+        'MAX_BYTES' => 2000000,     // 2 MB maximum content size
+        'USER_AGENT' => 'MetaTagAnalyzer/1.0 (+https://example.com)',
+        'ALLOW_PORTS' => [80, 443], // Allowed ports for HTTP requests
+        'VERIFY_SSL' => true,       // Verify SSL certificates
+    ],
+    
+    // Security Configuration
+    'SECURITY' => [
+        // Blocked IP ranges (CIDR notation)
+        'BLOCKED_IP_RANGES' => [
+            '127.0.0.0/8',      // Loopback
+            '10.0.0.0/8',       // Private Class A
+            '172.16.0.0/12',    // Private Class B
+            '192.168.0.0/16',   // Private Class C
+            '169.254.0.0/16',   // Link-local
+            '224.0.0.0/4',      // Multicast
+            '::1/128',          // IPv6 loopback
+            'fc00::/7',         // IPv6 unique local
+            'fe80::/10',        // IPv6 link-local
+        ],
+        
+        // Allowed URL schemes
+        'ALLOWED_SCHEMES' => ['http', 'https'],
+        
+        // Content Security Policy
+        'CSP_HEADER' => "default-src 'self' https: data: 'unsafe-inline'; img-src 'self' https: data:; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';",
+    ],
+    
+    // Logging Configuration
+    'LOGGING' => [
+        'ENABLED' => true,
+        'LEVEL' => 'INFO', // DEBUG, INFO, WARN, ERROR
+        'PATH' => __DIR__ . '/storage/logs/app.log',
+        'MAX_FILE_SIZE' => 2097152, // 2 MB
+        'MAX_FILES' => 5, // Keep 5 rotated log files
+    ],
+    
+    // Content Analysis Configuration
+    'ANALYSIS' => [
+        'MAX_HEADINGS_PER_LEVEL' => 3, // Extract first 3 H1, H2, H3 tags
+        'WORD_COUNT_MIN_LENGTH' => 3,  // Minimum word length for counting
+        'STRIP_TAGS' => ['script', 'style', 'nav', 'aside', 'footer', 'header'],
+        'OG_IMAGE_TIMEOUT' => 3, // Timeout for OG image validation
+        'FAVICON_FALLBACKS' => ['/favicon.ico', '/favicon.png'], // Fallback favicon paths
+    ],
+    
+    // Export Configuration
+    'EXPORT' => [
+        'JSON_PRETTY_PRINT' => true,
+        'CSV_DELIMITER' => ',',
+        'CSV_ENCLOSURE' => '"',
+        'MAX_EXPORT_SIZE' => 1048576, // 1 MB
+    ],
+    
+    // Feature Flags
+    'FEATURES' => [
+        'ENABLE_CACHE' => true,
+        'ENABLE_RATE_LIMITING' => true,
+        'ENABLE_LOGGING' => true,
+        'ENABLE_EXPORTS' => true,
+        'ENABLE_OG_IMAGE_VALIDATION' => false, // Disable to avoid external requests
+        'ENABLE_FAVICON_DISCOVERY' => true,
+        'ENABLE_SCHEMA_DETECTION' => true,
+    ],
+    
+    // Paths (relative to application root)
+    'PATHS' => [
+        'STORAGE' => 'storage',
+        'CACHE' => 'storage/cache',
+        'LOGS' => 'storage/logs',
+        'VIEWS' => 'app/Views',
+        'PUBLIC' => 'public',
+        'ASSETS' => 'public/assets',
+    ],
+    
+    // Development settings (only used when APP_ENV = 'dev')
+    'DEV' => [
+        'SHOW_ERRORS' => true,
+        'LOG_QUERIES' => true,
+        'DISABLE_CACHE' => false,
+        'MOCK_EXTERNAL_REQUESTS' => false,
+    ],
+];
